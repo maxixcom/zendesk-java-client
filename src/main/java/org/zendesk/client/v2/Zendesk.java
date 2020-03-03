@@ -1917,6 +1917,13 @@ public class Zendesk implements Closeable {
                 handleList(Article.class, "articles"));
     }
 
+    public Iterable<Article> getArticles(Section section) {
+        checkHasId(section);
+        return new PagedIterable<>(
+                tmpl("/help_center/sections/{id}/articles.json").set("id", section.getId()),
+                handleList(Article.class, "articles"));
+    }
+
     public Iterable<Article> getArticlesIncrementally(Date startTime) {
       return new PagedIterable<>(
               tmpl("/help_center/incremental/articles.json{?start_time}")
@@ -1939,6 +1946,7 @@ public class Zendesk implements Closeable {
                 tmpl("/help_center/articles/{articleId}/translations.json").set("articleId", articleId),
                 handleList(Translation.class, "translations"));
     }
+
     public Article createArticle(Article article) {
         checkHasSectionId(article);
         return complete(submit(req("POST", tmpl("/help_center/sections/{id}/articles.json").set("id", article.getSectionId()),
@@ -1977,6 +1985,24 @@ public class Zendesk implements Closeable {
     public void deleteArticle(Article article) {
         checkHasId(article);
         complete(submit(req("DELETE", tmpl("/help_center/articles/{id}.json").set("id", article.getId())),
+                handleStatus()));
+    }
+
+    /**
+     * Delete translation.
+     * @param translation
+     */
+    public void deleteTranslation(Translation translation) {
+        checkHasId(translation);
+        deleteTranslation(translation.getId());
+    }
+
+    /**
+     * Delete translation.
+     * @param translationId
+     */
+    public void deleteTranslation(Long translationId) {
+        complete(submit(req("DELETE", tmpl("/help_center/translations/{id}.json").set("id", translationId)),
                 handleStatus()));
     }
 
